@@ -1,5 +1,4 @@
-import { saveSettingsDebounced, changeMainAPI, callPopup, setGenerationProgress, CLIENT_VERSION, getRequestHeaders } from "../script.js";
-import { SECRET_KEYS, writeSecret } from "./secrets.js";
+import { saveSettingsDebounced, changeMainAPI, callPopup, setGenerationProgress, main_api } from "../script.js";
 import { delay } from "./utils.js";
 
 export {
@@ -9,43 +8,35 @@ export {
     loadHordeSettings,
     adjustHordeGenerationParams,
     getHordeModels,
-    MIN_AMOUNT_GEN,
 }
 
 let models = [];
 
 let horde_settings = {
-    models: [],
+    api_key: '0000000000',
+    model: null,
     use_horde: false,
-    auto_adjust_response_length: true,
-    auto_adjust_context_length: false,
+    auto_adjust: true,
 };
 
 const MAX_RETRIES = 100;
 const CHECK_INTERVAL = 3000;
-const MIN_AMOUNT_GEN = 16;
-const getRequestArgs = () => ({
-    method: "GET",
-    headers: {
-        "Client-Agent": CLIENT_VERSION,
-    }
-});
 
 async function getWorkers() {
-    const response = await fetch('https://horde.koboldai.net/api/v2/workers?type=text', getRequestArgs());
+    const response = await fetch('https://horde.koboldai.net/api/v2/workers?type=text');
     const data = await response.json();
     return data;
 }
 
 function validateHordeModel() {
-    let selectedModels = models.filter(m => horde_settings.models.includes(m.name));
+    let selectedModel = models.find(m => m.name == horde_settings.model);
 
-    if (selectedModels.length === 0) {
-        callPopup('No Horde model selected or the selected models are no longer available. Please choose another model', 'text');
+    if (!selectedModel) {
+        callPopup('No Horde model selected or the selected model is no longer available. Please choose another model', 'text');
         throw new Error('No Horde model available');
     }
 
-    return selectedModels;
+    return selectedModel;
 }
 
 async function adjustHordeGenerationParams(max_context_length, max_length) {
@@ -53,28 +44,22 @@ async function adjustHordeGenerationParams(max_context_length, max_length) {
     let maxContextLength = max_context_length;
     let maxLength = max_length;
     let availableWorkers = [];
-    let selectedModels = validateHordeModel();
+    let selectedModel = validateHordeModel();
 
-    if (selectedModels.length === 0) {
+    if (!selectedModel) {
         return { maxContextLength, maxLength };
     }
 
-    for (const model of selectedModels) {
-        for (const worker of workers) {
-            if (model.cluster == worker.cluster && worker.models.includes(model.name)) {
-                availableWorkers.push(worker);
-            }
+    for (const worker of workers) {
+        if (selectedModel.cluster == worker.cluster && worker.models.includes(selectedModel.name)) {
+            availableWorkers.push(worker);
         }
     }
 
     //get the minimum requires parameters, lowest common value for all selected
     for (const worker of availableWorkers) {
-        if (horde_settings.auto_adjust_context_length) {
-            maxContextLength = Math.min(worker.max_context_length, maxContextLength);
-        }
-        if (horde_settings.auto_adjust_response_length) {
-            maxLength = Math.min(worker.max_length, maxLength);
-        }
+        maxContextLength = Math.min(worker.max_context_length, maxContextLength);
+        maxLength = Math.min(worker.max_length, maxLength);
     }
 
     return { maxContextLength, maxLength };
@@ -96,14 +81,14 @@ async function generateHorde(prompt, params) {
         "params": params,
         //"trusted_workers": false,
         //"slow_workers": false,
-        "models": horde_settings.models,
+        "models": [horde_settings.model],
     };
 
-    const response = await fetch("/generate_horde", {
-        method: 'POST',
+    const response = await fetch("https://horde.koboldai.net/api/v2/generate/text/async", {
+        method: "POST",
         headers: {
-            ...getRequestHeaders(), 
-            "Client-Agent": CLIENT_VERSION,
+            "Content-Type": "application/json",
+            "apikey": horde_settings.api_key,
         },
         body: JSON.stringify(payload)
     });
@@ -120,7 +105,12 @@ async function generateHorde(prompt, params) {
     console.log(`Horde task id = ${task_id}`);
 
     for (let retryNumber = 0; retryNumber < MAX_RETRIES; retryNumber++) {
-        const statusCheckResponse = await fetch(`https://horde.koboldai.net/api/v2/generate/text/status/${task_id}`, getRequestArgs());
+        const statusCheckResponse = await fetch(`https://horde.koboldai.net/api/v2/generate/text/status/${task_id}`, {
+            headers: {
+                "Content-Type": "application/json",
+                "apikey": horde_settings.api_key,
+            }
+        });
 
         const statusCheckJson = await statusCheckResponse.json();
         console.log(statusCheckJson);
@@ -128,10 +118,8 @@ async function generateHorde(prompt, params) {
         if (statusCheckJson.done && Array.isArray(statusCheckJson.generations) && statusCheckJson.generations.length) {
             setGenerationProgress(100);
             const generatedText = statusCheckJson.generations[0].text;
-            const WorkerName = statusCheckJson.generations[0].worker_name;
             console.log(generatedText);
-            console.log(`Generated by Horde Worker: ${WorkerName}`);
-            return { text: generatedText, workerName: `Generated by Horde worker: ${WorkerName}` };
+            return generatedText;
         }
         else if (!queue_position_first) {
             queue_position_first = statusCheckJson.queue_position;
@@ -151,26 +139,31 @@ async function generateHorde(prompt, params) {
 }
 
 async function checkHordeStatus() {
-    const response = await fetch('https://horde.koboldai.net/api/v2/status/heartbeat', getRequestArgs());
+    const response = await fetch('https://horde.koboldai.net/api/v2/status/heartbeat');
     return response.ok;
 }
 
 async function getHordeModels() {
     $('#horde_model').empty();
-    const response = await fetch('https://horde.koboldai.net/api/v2/status/models?type=text', getRequestArgs());
+    const response = await fetch('https://horde.koboldai.net/api/v2/status/models?type=text');
     models = await response.json();
 
     for (const model of models) {
         const option = document.createElement('option');
         option.value = model.name;
-        option.innerText = `${model.name} (ETA: ${model.eta}s, Queue: ${model.queued}, Workers: ${model.count})`;
-        option.selected = horde_settings.models.includes(model.name);
+        option.innerText = `${model.name} (Queue: ${model.queued}, Workers: ${model.count})`;
+        option.selected = horde_settings.model === model.name;
         $('#horde_model').append(option);
     }
 
     // if previously selected is no longer available
-    if (horde_settings.models.length && models.filter(m => horde_settings.models.includes(m.name)).length === 0) {
-        horde_settings.models = [];
+    if (horde_settings.model && !models.find(m => m.name == horde_settings.model)) {
+        horde_settings.model = null;
+    }
+
+    // if no models preselected - select a first one in dropdown
+    if (!horde_settings.model) {
+        horde_settings.model = $('#horde_model').find(":selected").val();
     }
 }
 
@@ -180,11 +173,11 @@ function loadHordeSettings(settings) {
     }
 
     $('#use_horde').prop("checked", horde_settings.use_horde).trigger('input');
-    $('#horde_auto_adjust_response_length').prop("checked", horde_settings.auto_adjust_response_length);
-    $('#horde_auto_adjust_context_length').prop("checked", horde_settings.auto_adjust_context_length);
+    $('#horde_api_key').val(horde_settings.api_key);
+    $('#horde_auto_adjust').prop("checked", horde_settings.auto_adjust);
 }
 
-jQuery(function () {
+$(document).ready(function () {
     $("#use_horde").on("input", async function () {
         horde_settings.use_horde = !!$(this).prop("checked");
 
@@ -203,24 +196,18 @@ jQuery(function () {
     });
 
     $("#horde_model").on("change", function () {
-        horde_settings.models = $('#horde_model').val();
-        console.log('Updated Horde models', horde_settings.models);
+        horde_settings.model = $(this).val();
         saveSettingsDebounced();
     });
 
-    $("#horde_auto_adjust_response_length").on("input", function () {
-        horde_settings.auto_adjust_response_length = !!$(this).prop("checked");
+    $("#horde_api_key").on("input", function () {
+        horde_settings.api_key = $(this).val();
         saveSettingsDebounced();
     });
 
-    $("#horde_auto_adjust_context_length").on("input", function () {
-        horde_settings.auto_adjust_context_length = !!$(this).prop("checked");
+    $("#horde_auto_adjust").on("input", function () {
+        horde_settings.auto_adjust = !!$(this).prop("checked");
         saveSettingsDebounced();
-    });
-
-    $("#horde_api_key").on("input", async function () {
-        const key = $(this).val().trim();
-        await writeSecret(SECRET_KEYS.HORDE, key);
     });
 
     $("#horde_refresh").on("click", getHordeModels);

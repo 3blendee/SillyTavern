@@ -71,13 +71,11 @@ async function charaWrite(img_url, data, target_img, response = undefined, mes =
 
         fs.writeFileSync(target_img, new Buffer.from(encode(chunks)));
         if (response !== undefined) response.send(mes);
-        return true;
 
 
     } catch (err) {
         console.log(err);
-        if (response !== undefined) response.status(500).send(err);
-        return false;
+        if (response !== undefined) response.send(err);
     }
 }
 
@@ -104,12 +102,7 @@ async function charaWrite(img_url, data, target_img, response = undefined, mes =
         await webp.dwebp(source, dest, "-o")
 
         console.log(`Write... ${dest}`)
-        const success = await charaWrite(dest, data, path.parse(dest).name);
-
-        if (!success) {
-            console.log(`Failure on ${source} -> ${dest}`);
-            continue;
-        }
+        await charaWrite(dest, data, dest)
 
         console.log(`Remove... ${source}`)
         fs.rmSync(source)

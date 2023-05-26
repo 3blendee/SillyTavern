@@ -1,12 +1,11 @@
-import { saveSettings, callPopup, substituteParams, getTokenCount, getRequestHeaders } from "../script.js";
-import { download, debounce, delay, initScrollHeight, resetScrollHeight } from "./utils.js";
+import { saveSettings, callPopup, token, substituteParams, getTokenCount } from "../script.js";
+import { download, debounce } from "./utils.js";
 
 export {
     world_info,
     world_info_data,
     world_info_budget,
     world_info_depth,
-    world_info_recursive,
     world_names,
     imported_world_name,
     checkWorldInfo,
@@ -22,7 +21,6 @@ let world_info_data = null;
 let world_info_depth = 2;
 let world_info_budget = 128;
 let is_world_edit_open = false;
-let world_info_recursive = false;
 let imported_world_name = "";
 const saveWorldDebounced = debounce(async () => await _save(), 500);
 const saveSettingsDebounced = debounce(() => saveSettings(), 500);
@@ -49,16 +47,12 @@ function setWorldInfoSettings(settings, data) {
         world_info_depth = Number(settings.world_info_depth);
     if (settings.world_info_budget !== undefined)
         world_info_budget = Number(settings.world_info_budget);
-    if (settings.world_info_recursive !== undefined)
-        world_info_recursive = Boolean(settings.world_info_recursive);
 
-    $("#world_info_depth_counter").text(world_info_depth);
+    $("#world_info_depth_counter").html(`${world_info_depth} Messages`);
     $("#world_info_depth").val(world_info_depth);
 
-    $("#world_info_budget_counter").text(world_info_budget);
+    $("#world_info_budget_counter").html(`${world_info_budget} Tokens`);
     $("#world_info_budget").val(world_info_budget);
-
-    $("#world_info_recursive").prop('checked', world_info_recursive);
 
     world_names = data.world_names?.length ? data.world_names : [];
 
@@ -98,7 +92,10 @@ async function loadWorldInfoData() {
 
     const response = await fetch("/getworldinfo", {
         method: "POST",
-        headers: getRequestHeaders(),
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": token,
+        },
         body: JSON.stringify({ name: world_info }),
     });
 
@@ -110,7 +107,10 @@ async function loadWorldInfoData() {
 async function updateWorldInfoList(importedWorldName) {
     var result = await fetch("/getsettings", {
         method: "POST",
-        headers: getRequestHeaders(),
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": token,
+        },
         body: JSON.stringify({}),
     });
 
@@ -157,15 +157,11 @@ function appendWorldEntry(entry) {
     // key
     const keyInput = template.find('textarea[name="key"]');
     keyInput.data("uid", entry.uid);
-    keyInput.on("click", function (event) {
-        // Prevent closing the drawer on clicking the input
-        event.stopPropagation();
-    });
-
     keyInput.on("input", function () {
         const uid = $(this).data("uid");
         const value = $(this).val();
-        resetScrollHeight(this);
+        $(this).css("height", ""); //reset the height
+        $(this).css("height", $(this).prop("scrollHeight") + "px");
         world_info_data.entries[uid].key = value
             .split(",")
             .map((x) => x.trim())
@@ -173,7 +169,8 @@ function appendWorldEntry(entry) {
         saveWorldInfo();
     });
     keyInput.val(entry.key.join(",")).trigger("input");
-    initScrollHeight(keyInput);
+    keyInput.css("height", ""); //reset the height
+    keyInput.css("height", $(this).prop("scrollHeight") + "px");
 
     // keysecondary
     const keySecondaryInput = template.find('textarea[name="keysecondary"]');
@@ -181,16 +178,17 @@ function appendWorldEntry(entry) {
     keySecondaryInput.on("input", function () {
         const uid = $(this).data("uid");
         const value = $(this).val();
-        resetScrollHeight(this);
+        $(this).css("height", ""); //reset the height
+        $(this).css("height", $(this).prop("scrollHeight") + "px");
         world_info_data.entries[uid].keysecondary = value
             .split(",")
             .map((x) => x.trim())
             .filter((x) => x);
         saveWorldInfo();
     });
-
     keySecondaryInput.val(entry.keysecondary.join(",")).trigger("input");
-    initScrollHeight(keySecondaryInput);
+    keySecondaryInput.css("height", ""); //reset the height
+    keySecondaryInput.css("height", $(this).prop("scrollHeight") + "px");
 
     // comment
     const commentInput = template.find('textarea[name="comment"]');
@@ -198,11 +196,14 @@ function appendWorldEntry(entry) {
     commentInput.on("input", function () {
         const uid = $(this).data("uid");
         const value = $(this).val();
+        $(this).css("height", ""); //reset the height
+        $(this).css("height", $(this).prop("scrollHeight") + "px");
         world_info_data.entries[uid].comment = value;
         saveWorldInfo();
     });
     commentInput.val(entry.comment).trigger("input");
-    //initScrollHeight(commentInput);
+    commentInput.css("height", ""); //reset the height
+    commentInput.css("height", $(this).prop("scrollHeight") + "px");
 
     // content
     const contentInput = template.find('textarea[name="content"]');
@@ -211,6 +212,8 @@ function appendWorldEntry(entry) {
         const uid = $(this).data("uid");
         const value = $(this).val();
         world_info_data.entries[uid].content = value;
+        $(this).css("height", ""); //reset the height
+        $(this).css("height", $(this).prop("scrollHeight") + "px");
         saveWorldInfo();
 
         // count tokens
@@ -221,7 +224,8 @@ function appendWorldEntry(entry) {
             .html(numberOfTokens);
     });
     contentInput.val(entry.content).trigger("input");
-    //initScrollHeight(contentInput);
+    contentInput.css("height", ""); //reset the height
+    contentInput.css("height", $(this).prop("scrollHeight") + "px");
 
     // selective
     const selectiveInput = template.find('input[name="selective"]');
@@ -235,26 +239,12 @@ function appendWorldEntry(entry) {
         const keysecondary = $(this)
             .closest(".world_entry")
             .find(".keysecondary");
-
-        const keysecondarytextpole = $(this)
-            .closest(".world_entry")
-            .find(".keysecondarytextpole");
-
-        const keyprimarytextpole = $(this)
-            .closest(".world_entry")
-            .find(".keyprimarytextpole");
-
-        const keyprimaryHeight = keyprimarytextpole.outerHeight();
-        keysecondarytextpole.css('height', keyprimaryHeight + 'px');
-
         value ? keysecondary.show() : keysecondary.hide();
-
     });
     selectiveInput.prop("checked", entry.selective).trigger("input");
     selectiveInput.siblings(".checkbox_fancy").click(function () {
         $(this).siblings("input").click();
     });
-
 
     // constant
     const constantInput = template.find('input[name="constant"]');
@@ -301,22 +291,7 @@ function appendWorldEntry(entry) {
         .trigger("input");
 
     // display uid
-    template.find(".world_entry_form_uid_value").text(entry.uid);
-
-    // disable
-    const disableInput = template.find('input[name="disable"]');
-    disableInput.data("uid", entry.uid);
-    disableInput.on("input", function () {
-        const uid = $(this).data("uid");
-        const value = $(this).prop("checked");
-        world_info_data.entries[uid].disable = value;
-        saveWorldInfo();
-        console.log(`WI #${entry.uid} disabled? ${world_info_data.entries[uid].disable}`);
-    });
-    disableInput.prop("checked", entry.disable).trigger("input");
-    disableInput.siblings(".checkbox_fancy").click(function () {
-        $(this).siblings("input").click();
-    });
+    template.find(".world_entry_form_uid_value").html(entry.uid);
 
     // delete button
     const deleteButton = template.find("input.delete_entry_button");
@@ -329,7 +304,6 @@ function appendWorldEntry(entry) {
     });
 
     template.appendTo("#world_popup_entries_list");
-
     return template;
 }
 
@@ -351,7 +325,6 @@ function createWorldInfoEntry() {
         selective: false,
         order: 100,
         position: 0,
-        disable: false,
     };
     const newUid = getFreeWorldEntryUid();
 
@@ -370,7 +343,10 @@ function createWorldInfoEntry() {
 async function _save() {
     const response = await fetch("/editworldinfo", {
         method: "POST",
-        headers: getRequestHeaders(),
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": token,
+        },
         body: JSON.stringify({ name: world_info, data: world_info_data }),
     });
 }
@@ -384,15 +360,15 @@ async function saveWorldInfo(immediately) {
     if (immediately) {
         return await _save();
     }
-
+    
     saveWorldDebounced();
 }
 
 async function renameWorldInfo() {
     const oldName = world_info;
-    const newName = $("#world_popup_name").val().trim();
+    const newName = $("#world_popup_name").val();
 
-    if (oldName === newName || !newName) {
+    if (oldName === newName) {
         return;
     }
 
@@ -408,7 +384,10 @@ async function deleteWorldInfo(worldInfoName, selectWorldName) {
 
     const response = await fetch("/deleteworldinfo", {
         method: "POST",
-        headers: getRequestHeaders(),
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": token,
+        },
         body: JSON.stringify({ name: worldInfoName }),
     });
 
@@ -491,12 +470,11 @@ function checkWorldInfo(chat) {
     const sortedEntries = Object.keys(world_info_data.entries)
         .map((x) => world_info_data.entries[x])
         .sort((a, b) => b.order - a.order);
-
     while (needsToScan) {
         let activatedNow = new Set();
 
         for (let entry of sortedEntries) {
-            if (allActivatedEntries.has(entry.uid) || entry.disable == true) {
+            if (allActivatedEntries.has(entry.uid)) {
                 continue;
             }
 
@@ -506,18 +484,16 @@ function checkWorldInfo(chat) {
 
             if (Array.isArray(entry.key) && entry.key.length) {
                 primary: for (let key of entry.key) {
-                    const substituted = substituteParams(key);
-                    if (substituted && textToScan.includes(substituted.trim().toLowerCase())) {
+                    if (key && textToScan.includes(key.trim().toLowerCase())) {
                         if (
                             entry.selective &&
                             Array.isArray(entry.keysecondary) &&
                             entry.keysecondary.length
                         ) {
                             secondary: for (let keysecondary of entry.keysecondary) {
-                                const secondarySubstituted = substituteParams(keysecondary);
                                 if (
-                                    secondarySubstituted &&
-                                    textToScan.includes(secondarySubstituted.trim().toLowerCase())
+                                    keysecondary &&
+                                    textToScan.includes(keysecondary.trim().toLowerCase())
                                 ) {
                                     activatedNow.add(entry.uid);
                                     break secondary;
@@ -532,7 +508,7 @@ function checkWorldInfo(chat) {
             }
         }
 
-        needsToScan = world_info_recursive && activatedNow.size > 0;
+        needsToScan = activatedNow.size > 0;
         const newEntries = [...activatedNow]
             .map((x) => world_info_data.entries[x])
             .sort((a, b) => sortedEntries.indexOf(a) - sortedEntries.indexOf(b));
@@ -652,7 +628,7 @@ $(document).ready(() => {
     });
 
     $("#world_popup_delete").click(() => {
-        callPopup("<h3>Delete the World Info?</h3>", "del_world");
+        callPopup("<h3>Delete the World Info?</h3>",  "del_world");
     });
 
     $("#world_popup_new").click(() => {
@@ -673,18 +649,13 @@ $(document).ready(() => {
 
     $(document).on("input", "#world_info_depth", function () {
         world_info_depth = Number($(this).val());
-        $("#world_info_depth_counter").text($(this).val());
+        $("#world_info_depth_counter").html(`${$(this).val()} Messages`);
         saveSettingsDebounced();
     });
 
     $(document).on("input", "#world_info_budget", function () {
         world_info_budget = Number($(this).val());
-        $("#world_info_budget_counter").text($(this).val());
+        $("#world_info_budget_counter").html(`${$(this).val()} Tokens`);
         saveSettingsDebounced();
     });
-
-    $(document).on("input", "#world_info_recursive", function () {
-        world_info_recursive = !!$(this).prop('checked');
-        saveSettingsDebounced();
-    })
 });

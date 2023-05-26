@@ -1,4 +1,4 @@
-import { callPopup, saveSettings, saveSettingsDebounced } from "../script.js";
+import { callPopup, saveSettings, saveSettingsDebounced, token } from "../script.js";
 import { isSubsetOf } from "./utils.js";
 export {
     getContext,
@@ -24,21 +24,19 @@ const extension_settings = {
     caption: {},
     expressions: {},
     dice: {},
-    tts: {},
-    sd: {},
 };
 
 let modules = [];
 let activeExtensions = new Set();
 
-const getContext = () => window['SillyTavern'].getContext();
+const getContext = () => window['TavernAI'].getContext();
 const getApiUrl = () => extension_settings.apiUrl;
 const defaultRequestArgs = { method: 'GET', headers: { 'Bypass-Tunnel-Reminder': 'bypass' } };
 let connectedToApi = false;
 
 async function discoverExtensions() {
     try {
-        const response = await fetch('/discover_extensions');
+        const response = await fetch('/discover_extensions', { headers: { 'X-CSRF-Token': token } });
 
         if (response.ok) {
             const extensions = await response.json();
@@ -95,9 +93,8 @@ async function activateExtensions() {
     for (let entry of extensions) {
         const name = entry[0];
         const manifest = entry[1];
-        const elementExists = document.getElementById(name) !== null;
 
-        if (elementExists || activeExtensions.has(name)) {
+        if (activeExtensions.has(name)) {
             continue;
         }
 
@@ -143,7 +140,7 @@ function autoConnectInputHandler() {
     if (value && !connectedToApi) {
         $("#extensions_connect").trigger('click');
     }
-
+    
     saveSettingsDebounced();
 }
 
@@ -161,7 +158,7 @@ async function connectToApi(baseUrl) {
         if (getExtensionsResult.ok) {
             const data = await getExtensionsResult.json();
             modules = data.modules;
-            await activateExtensions();
+            activateExtensions();
         }
 
         updateStatus(getExtensionsResult.ok);
@@ -244,7 +241,7 @@ function showExtensionsDetails() {
         const manifest = extension[1];
         html += `<h4>${DOMPurify.sanitize(manifest.display_name)}</h4>`;
         if (activeExtensions.has(name)) {
-            html += `<p class="success">Extension is active. <a href="javascript:void" data-name="${name}" class="disable_extension">Click to Disable</a></p>`;
+            html += `<p class="success">Extension is active. <a href="javascript:void" data-name="${name}" class="disable_extension">Disable</a></p>`;
             if (Array.isArray(manifest.optional)) {
                 const optional = new Set(manifest.optional);
                 modules.forEach(x => optional.delete(x));
@@ -255,7 +252,7 @@ function showExtensionsDetails() {
             }
         }
         else if (extension_settings.disabledExtensions.includes(name)) {
-            html += `<p class="disabled">Extension is disabled. <a href="javascript:void" data-name=${name} class="enable_extension">Click to Enable</a></p>`;
+            html += `<p class="disabled">Extension is disabled. <a href="javascript:void" data-name=${name} class="enable_extension">Enable</a></p>`;
         }
         else {
             const requirements = new Set(manifest.requires);
@@ -274,15 +271,12 @@ async function loadExtensionSettings(settings) {
     }
 
     $("#extensions_url").val(extension_settings.apiUrl);
-    $("#extensions_autoconnect").prop('checked', extension_settings.autoConnect);
+    $("#extensions_autoconnect").prop('checked', extension_settings.autoConnect).trigger('input');
 
     // Activate offline extensions
     extensionNames = await discoverExtensions();
     manifests = await getManifests(extensionNames)
-    await activateExtensions();
-    if (extension_settings.autoConnect && extension_settings.apiUrl) {
-        await connectToApi(extension_settings.apiUrl);
-    }
+    activateExtensions();
 }
 
 $(document).ready(async function () {

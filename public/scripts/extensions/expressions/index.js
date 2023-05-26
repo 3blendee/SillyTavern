@@ -1,9 +1,9 @@
-import { saveSettingsDebounced } from "../../../script.js";
+import { saveSettingsDebounced, token } from "../../../script.js";
 import { getContext, getApiUrl, modules, extension_settings } from "../../extensions.js";
 export { MODULE_NAME };
 
 const MODULE_NAME = 'expressions';
-const UPDATE_INTERVAL = 2000;
+const UPDATE_INTERVAL = 1000;
 const DEFAULT_EXPRESSIONS = [
     "admiration",
     "amusement",
@@ -80,7 +80,7 @@ async function moduleWorker() {
     const context = getContext();
 
     // non-characters not supported
-    if (!context.groupId && context.characterId === undefined) {
+    if (!context.groupId && !context.characterId) {
         removeExpression();
         return;
     }
@@ -123,7 +123,7 @@ async function moduleWorker() {
         offlineMode.css('display', 'none');
     }
 
-
+    
     // check if last message changed
     if ((lastCharacter === context.characterId || lastCharacter === context.groupId)
         && lastMessage === currentLastMessage.mes) {
@@ -250,7 +250,11 @@ async function getSpritesList(name) {
     console.log('getting sprites list');
 
     try {
-        const result = await fetch(`/get_sprites?name=${encodeURIComponent(name)}`);
+        const result = await fetch(`/get_sprites?name=${encodeURIComponent(name)}`, {
+            headers: {
+                'X-CSRF-Token': token,
+            }
+        });
 
         let sprites = result.ok ? (await result.json()) : [];
         return sprites;
@@ -262,6 +266,7 @@ async function getSpritesList(name) {
 }
 
 async function getExpressionsList() {
+    console.log('getting expressions list');
     // get something for offline mode (default images)
     if (!modules.includes('classify')) {
         return DEFAULT_EXPRESSIONS;
@@ -344,12 +349,10 @@ function onClickExpressionImage() {
 (function () {
     function addExpressionImage() {
         const html = `
-        <div id="expression-wrapper">
             <div id="expression-holder" class="expression-holder" style="display:none;">
                 <div id="expression-holderheader" class="fa-solid fa-grip drag-grabber"></div>
                 <img id="expression-image" class="expression">
-            </div>
-        </div>`;
+            </div>`;
         $('body').append(html);
     }
     function addSettings() {
@@ -381,5 +384,4 @@ function onClickExpressionImage() {
     addExpressionImage();
     addSettings();
     setInterval(moduleWorkerWrapper, UPDATE_INTERVAL);
-    moduleWorkerWrapper();
 })();

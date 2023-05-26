@@ -1,8 +1,23 @@
-export function onlyUnique(value, index, array) {
+export {
+    onlyUnique,
+    shuffle,
+    download,
+    urlContentToDataUri,
+    getBase64Async,
+    getStringHash,
+    debounce,
+    delay,
+    isSubsetOf,
+    incrementString,
+    stringFormat,
+};
+
+/// UTILS
+function onlyUnique(value, index, array) {
     return array.indexOf(value) === index;
 }
 
-export function shuffle(array) {
+function shuffle(array) {
     let currentIndex = array.length,
         randomIndex;
 
@@ -17,7 +32,7 @@ export function shuffle(array) {
     return array;
 }
 
-export function download(content, fileName, contentType) {
+function download(content, fileName, contentType) {
     const a = document.createElement("a");
     const file = new Blob([content], { type: contentType });
     a.href = URL.createObjectURL(file);
@@ -25,7 +40,7 @@ export function download(content, fileName, contentType) {
     a.click();
 }
 
-export async function urlContentToDataUri(url, params) {
+async function urlContentToDataUri(url, params) {
     const response = await fetch(url, params);
     const blob = await response.blob();
     return await new Promise(callback => {
@@ -35,7 +50,7 @@ export async function urlContentToDataUri(url, params) {
     });
 }
 
-export function getBase64Async(file) {
+function getBase64Async(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -48,16 +63,7 @@ export function getBase64Async(file) {
     });
 }
 
-export async function parseJsonFile(file) {
-    return new Promise((resolve, reject) => {
-        const fileReader = new FileReader();
-        fileReader.onload = event => resolve(JSON.parse(event.target.result));
-        fileReader.onerror = error => reject(error);
-        fileReader.readAsText(file);
-    });
-}
-
-export function getStringHash(str, seed = 0) {
+function getStringHash(str, seed = 0) {
     let h1 = 0xdeadbeef ^ seed,
         h2 = 0x41c6ce57 ^ seed;
     for (let i = 0, ch; i < str.length; i++) {
@@ -72,7 +78,7 @@ export function getStringHash(str, seed = 0) {
     return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
 
-export function debounce(func, timeout = 300) {
+function debounce(func, timeout = 300) {
     let timer;
     return (...args) => {
         clearTimeout(timer);
@@ -80,20 +86,10 @@ export function debounce(func, timeout = 300) {
     };
 }
 
-export function getUniqueName(name, exists) {
-    let i = 1;
-    let baseName = name;
-    while (exists(name)) {
-        name = `${baseName} (${i})`;
-        i++;
-    }
-    return name;
-}
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+const isSubsetOf = (a, b) => (Array.isArray(a) && Array.isArray(b)) ? b.every(val => a.includes(val)) : false;
 
-export const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-export const isSubsetOf = (a, b) => (Array.isArray(a) && Array.isArray(b)) ? b.every(val => a.includes(val)) : false;
-
-export function incrementString(str) {
+function incrementString(str) {
     // Find the trailing number or it will match the empty string
     const count = str.match(/\d*$/);
 
@@ -102,7 +98,7 @@ export function incrementString(str) {
     return str.substr(0, count.index) + (++count[0]);
 };
 
-export function stringFormat(format) {
+function stringFormat(format) {
     const args = Array.prototype.slice.call(arguments, 1);
     return format.replace(/{(\d+)}/g, function (match, number) {
         return typeof args[number] != 'undefined'
@@ -111,81 +107,3 @@ export function stringFormat(format) {
             ;
     });
 };
-
-// Save the caret position in a contenteditable element
-export function saveCaretPosition(element) {
-    // Get the current selection
-    const selection = window.getSelection();
-
-    // If the selection is empty, return null
-    if (selection.rangeCount === 0) {
-        return null;
-    }
-
-    // Get the range of the current selection
-    const range = selection.getRangeAt(0);
-
-    // If the range is not within the specified element, return null
-    if (!element.contains(range.commonAncestorContainer)) {
-        return null;
-    }
-
-    // Return an object with the start and end offsets of the range
-    const position = {
-        start: range.startOffset,
-        end: range.endOffset
-    };
-
-    console.log('Caret saved', position);
-
-    return position;
-}
-
-// Restore the caret position in a contenteditable element
-export function restoreCaretPosition(element, position) {
-    // If the position is null, do nothing
-    if (!position) {
-        return;
-    }
-
-    console.log('Caret restored', position);
-
-    // Create a new range object
-    const range = new Range();
-
-    // Set the start and end positions of the range within the element
-    range.setStart(element.childNodes[0], position.start);
-    range.setEnd(element.childNodes[0], position.end);
-
-    // Create a new selection object and set the range
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-}
-
-export async function resetScrollHeight(element) {
-    $(element).css('height', '0px');
-    $(element).css('height', $(element).prop('scrollHeight') + 3 + 'px');
-}
-
-export async function initScrollHeight(element) {
-    await delay(1);
-
-    const curHeight = Number($(element).css("height").replace('px', ''));
-    const curScrollHeight = Number($(element).prop("scrollHeight"));
-    const diff = curScrollHeight - curHeight;
-
-    if (diff < 3) { return } //happens when the div isn't loaded yet
-
-    const newHeight = curHeight + diff + 3; //the +3 here is to account for padding/line-height on text inputs
-    //console.log(`init height to ${newHeight}`);
-    $(element).css("height", "");
-    $(element).css("height", `${newHeight}px`);
-    //resetScrollHeight(element);
-}
-
-export function sortByCssOrder(a, b) {
-    const _a = Number($(a).css('order'));
-    const _b = Number($(b).css('order'));
-    return _a - _b;
-}

@@ -259,7 +259,6 @@ class Client {
     constructor(auto_reconnect = false, use_cached_bots = false) {
         this.auto_reconnect = auto_reconnect;
         this.use_cached_bots = use_cached_bots;
-        this.abortController = new AbortController();
     }
 
     async init(token, proxy = null) {
@@ -268,7 +267,6 @@ class Client {
             timeout: 60000,
             httpAgent: new http.Agent({ keepAlive: true }),
             httpsAgent: new https.Agent({ keepAlive: true }),
-            signal: this.abortController.signal,
         });
         if (proxy) {
             this.session.defaults.proxy = {
@@ -319,28 +317,23 @@ class Client {
             throw new Error('Invalid token.');
         }
         const botList = viewer.availableBots;
-        const retries = 2;
+
         const bots = {};
         for (const bot of botList.filter(x => x.deletionState == 'not_deleted')) {
-            try {
-                const url = `https://poe.com/_next/data/${this.next_data.buildId}/${bot.displayName}.json`;
-                let r;
-    
-                if (this.use_cached_bots && cached_bots[url]) {
-                    r = cached_bots[url];
-                }
-                else {
-                    logger.info(`Downloading ${url}`);
-                    r = await request_with_retries(() => this.session.get(url), retries);
-                    cached_bots[url] = r;
-                }
-    
-                const chatData = r.data.pageProps.payload.chatOfBotDisplayName;
-                bots[chatData.defaultBotObject.nickname] = chatData;
+            const url = `https://poe.com/_next/data/${this.next_data.buildId}/${bot.displayName}.json`;
+            let r;
+
+            if (this.use_cached_bots && cached_bots[url]) {
+                r = cached_bots[url];
             }
-            catch {
-                console.log(`Could not load bot: ${bot.displayName}`);
+            else {
+                logger.info(`Downloading ${url}`);
+                r = await request_with_retries(() => this.session.get(url));
+                cached_bots[url] = r;
             }
+
+            const chatData = r.data.pageProps.payload.chatOfBotDisplayName;
+            bots[chatData.defaultBotObject.nickname] = chatData;
         }
 
         return bots;
@@ -521,7 +514,7 @@ class Client {
 
         console.log(`Sending message to ${chatbot}: ${message}`);
 
-        const messageData = await this.send_query("SendMessageMutation", {
+        const messageData = await this.send_query("AddHumanMessageMutation", {
             "bot": chatbot,
             "query": message,
             "chatId": this.bots[chatbot]["chatId"],
@@ -531,14 +524,14 @@ class Client {
 
         delete this.active_messages["pending"];
 
-        if (!messageData["data"]["messageEdgeCreate"]["message"]) {
+        if (!messageData["data"]["messageCreateWithStatus"]["messageLimit"]["canSend"]) {
             throw new Error(`Daily limit reached for ${chatbot}.`);
         }
 
         let humanMessageId;
         try {
-            const humanMessage = messageData["data"]["messageEdgeCreate"]["message"];
-            humanMessageId = humanMessage["node"]["messageId"];
+            const humanMessage = messageData["data"]["messageCreateWithStatus"];
+            humanMessageId = humanMessage["message"]["messageId"];
         } catch (error) {
             throw new Error(`An unknown error occured. Raw response data: ${messageData}`);
         }
@@ -551,8 +544,6 @@ class Client {
         let messageId;
         while (true) {
             try {
-                this.abortController.signal.throwIfAborted();
-
                 const message = this.message_queues[humanMessageId].shift();
                 if (!message) {
                     await new Promise(resolve => setTimeout(() => resolve(), 1000));

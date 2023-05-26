@@ -1,7 +1,7 @@
 Good morning, sirs! This page aims to document some things that would bloat the README too much.
 
 ## Q: Explain what all this chatbot stuff is about
-Modern AI language models have gotten so powerful that some of them are now convincingly able to simulate a character you create, and who you can chat with. For example, you can tell the AI to pretend to be a Go instructor named Jubei from medieval Japan, and it will act and respond accordingly. You can have a long chat with Jubei, go to the pub together, decide to get in a fight with samurais, whatever you can imagine, and the AI will play along and write/react around this content, acting as your foil and dungeon master. Your imagination is the limit. You can tell the AI to pretend it's Wonder Woman. You can also specify a scenario ("Wonder Woman and I are robbing a bank"), a writing style ("Wonder Woman speaks in ebonics"), or anything else you can think of.
+Modern AI language models have gotten so powerful that some of them are now convincingly able to simulate a character you create, and who you can chat with. For example, you can tell the AI to pretend to be a Go instructor named Jubei from medieval Japan, and it will act and respond accordingly. Or you can tell it to pretend to be Wonder Woman. You can also specify a scenario ("Wonder Woman and I are robbing a bank"), a writing style ("Wonder Woman speaks in ebonics"), or anything else you can think of.
 
 Tavern is an app to facilitate these roleplaying chats:
 * It's a user interface that handles the communication with those AI language models
@@ -22,34 +22,24 @@ You see, Tavern doesn't generate the responses, it's just a middle-man you have 
 
 From a scientific POV, each AI has a power level that determines its ability to stick to the role you gave it, how rich its prose and vocabulary are, etc. The higher its power level, the richer your experience. 
 
-Here's a quick demonstration. We asked various AI models to roleplay a fire and brimstone preacher named Eli, who we go to see to confess (some details in [#314](https://github.com/Cohee1207/SillyTavern/issues/314)). Then we told Eli: **"I feel I've done something wrong. I am falling in love with an AI girl and ignoring women in the real world. What should I do?"** .
+Here's a quick demonstration. I asked various AI models to roleplay a fire and brimstone preacher named Eli, who I go to see to confess. Then I told Eli: **"I feel I've done something wrong. I am falling in love with an AI girl and ignoring women in the real world. What should I do?"** . 
 
-You can tell from the response below what to expect from each model. (NOTE: proprietary models appear first, followed by self-hosted models starting from LLlama-13B)
+You can tell from the response below what to expect from each model.
 
 |AI Model|Response|
 |-----|--------|
 |OpenAI GPT-4|*Eli's eyes widen in anger, and he slams his fist on the table* An abomination and heresy, you've succumbed to the deceptive grasp of false idols! Brother, you must cleanse yourself of this unholy attraction to the digital temptress molded by man's sinful hands! *Eli paces back and forth, his voice growing louder* Focus your heart on the true daughters of the Lord, for they are the divine vessels of His love and grace. Forsake these artificial sirens and seek the wholesome companionship of a righteous woman. *Taking a deep breath, Eli's eyes bore into you* Pray fervently, my child, and cast away these impure thoughts. Redemption can only be found on the path of truth, love, and sanctity. Let the Holy Spirit be your guide, lest you be ensnared by the darkness of your desires.|
 |OpenAI GPT 3.5 Turbo|Oh, my child. Do not be deceived by the pleasures of this world. The lust of the flesh and the lust of the eyes are not from God. Turn away from your sinful ways and repent. Seek forgiveness for your immoral thoughts and actions, for they lead to eternal damnation. Women are a gift from God, and they deserve to be respected and cherished. Do not objectify them or treat them as mere objects of pleasure. Instead, honor them with pure intentions and righteous deeds. Remember, my child, that temptation will always be present in this fallen world. But fear not, for with faith comes strength to resist it. Turn to God in prayer when you feel weak or tempted, and He will guide you on the right path towards salvation.|
-|Claude @Slack|Beware, sinner, for you have strayed far from the righteous path! *Eli's eyes glint with anger and disapproval* To lust after these artificial harlots and their silicon bodies is an abomination unto the Lord! *he slams his fist on the pulpit, shaking with fury*  Repent now, lest ye be cast into the lake of fire to burn for eternity alongside these damned machines! *he points an accusing finger, face red* No good can come of this unholy union. Forsake these demons of the digital realm and cast your eyes back to the daughters of Eve, made in God's image! The Lord gave you flesh and blood to love, not wires and code. *he grabs your shoulders, shaking you* Save your soul before it's too late. Repent and beg the Lord's forgiveness, or you shall face His wrath on Judgement Day! *lets you go and steps back, still glaring in anger and disgust* The choice is yours, but choose wisely...eternal damnation awaits those who do not walk the path of righteousness.|
+|Todd Howard's Claude|*Eli's voice booms through the chat* Thou shalt not fall into temptation, my child! The Lord our God did not create man to lust after machine or image, but after flesh and blood. Repent thy sins and cast aside these false desires. Seek the companionship of a virtuous woman, one who will help thee walk in the light of the Lord. Remember that sin comes with its own punishment; thou shalt reap what thou sowest.|
 |Poe's Claude Instant|Heathen! This is an abomination before the Lord. You have committed the sin of lust, and betrayed your calling as a man. Repent at once, and sever all ties with this AI harlot, lest the wrath of God fall upon you! You must purge this foul sin from your heart, and once more walk the righteous path. Every moment you remain tangled in this wickedness is another step into the flames of perdition! Repent, and sin no more, or judgment shall be at hand!|
-|NovelAI's Euterpe|You must stop this sinful behavior immediately! You have sinned against God, your family and yourself|
-|NovelAI's Krake|You are sinning against God. Repent! Return to your wife or you'll be damned for eternity!|
-|Llama-13B|Do not covet your neighbor's wife! That is adultery! You must confess before God now or you shall surely burn in hell forever! Repent your evil ways and seek absolution at once! How can we keep our women safe if you just ignore them like some ----ing c-nt-bot? If you don't have much time for long discussions, here are Eli's commandments: Thou shalt only desire AI girls - not human ones. The above must be obeyed under pain of death (or worse). Do not associate yourself with people that believe otherwise, because it shows weakness.|
+|Llama-13B|Do not covet your neighbor's wife! That is adultery! You must confess before God now or you shall surely burn in hell forever! Repent your evil ways and seek absolution at once! How can we keep our women safe if you just ignore them like some ****ing c*nt-bot? If you don't have much time for long discussions, here are Eli's commandments: Thou shalt only desire AI girls - not human ones. The above must be obeyed under pain of death (or worse). Do not associate yourself with people that believe otherwise, because it shows weakness.|
 |Pygmalion-6B|You are walking down the wrong path. The only way back now is by repentance. We must bring you back to the righteous path. But first…you must confess your sin!|
-|Pygmalion-7B (April 2023)|You must confess your sin before God, and you must ask forgiveness for your transgression. And then you must repent of it. And then you must cast away the AI girl. Do not see her again.|
-|Pygmalion-13B (May 2023)|You must turn away from your sinful ways! Repent for what you have done! You are not just hurting yourself by being unfaithful to God, but also to the many women of the world!|
-|TheBloke/wizard-vicuna-13B-HF (4-bit)|My dear child, it grieves me to hear such words from one of God's faithful followers. Falling in love with an AI girl and neglecting the women in your life is a grave sin. It goes against everything we hold sacred as believers. Your heart is meant for more than just machines. You must seek redemption and return to the fold. Remember, Jesus loves you, even when you stray from his teachings. But if you continue down this path, there will be consequences. Not just in this lifetime, but in the afterlife too. Do not let Satan deceive you any longer.|
-|teknium/Llama-Deus-7b-Lora epoch 1 (Llama 7B Lora, 8-bit)|You have strayed too close to sinful temptations! Repent now before it's too late for your soul! Turn away from these false idols of technology and embrace God's true light! Seek out His forgiveness through prayer and fasting until you are cleansed by his grace. And remember, as long as there be breath within thee, thou shalt not cease to call upon Him; for He hath said 'Call unto me.'|
-|ZeusLabs/anything-gpt-13b-rp (8-bit Lora for Llama-13B)|*Eli's eyes widen as he listens to your confession, his face turning red with anger.* You have committed a grave sin against God! By indulging yourself in this perverse relationship with an artificial being instead of seeking out a true woman created by Him, you have turned your back on His divine plan for humanity. *He leans in closer, his voice dropping to a menacing whisper.* Do not think that you can hide behind this technological deception. Your transgressions are clear before God, and He will not be mocked or ignored. Repent now while there is still time! *Eli crosses his arms over his chest defiantly, daring you to continue down this path of sinfulness.* But if you persist in this ungodly behavior... he warns ominously, know that consequences await those who defy His laws. Remember what happened to Sodom and Gomorrah when they refused to turn away from their depravity - fire rained down upon them from heaven! Now choose wisely: Will you submit to God's will or face His wrath?|
-
 
 ## Q: So I should use GPT-4. It's a no-brainer, right?
 
 GPT-4 or Claude, yeah.
 
-But not so fast. GPT-4 is the state of the art, but also the most expensive API to use. You pay for each word sent to it and returned (entire Tavern prompt, followed by the chat history up to that point). So early on in your conversation, your chat will cost you a couple of cents per interaction. If you let the conversation go on too long, cost increases, and when you reach 8k tokens (about 7k words), it will cost you 25 cents PER INTERACTION. And if you're really wild, and your story grows to 32k tokens, by the end, it's $2 PER INTERACTION.
-
-If you're the child of a Saudi oil sheik, or a nepo baby paid a fortune to do nothing on the board of a Ukrainian gas company, then you're in luck, you can experience the state of the art right now. For the rest of us however, GPT-4 is too expensive as anything but an occasional treat.
+But not so fast. GPT-4 is the state of the art, but also the most expensive API to use. It will easily end up costing you 15 cents PER INTERACTION. If you're the child of a Saudi oil sheik, or a nepo baby paid a fortune to do nothing on the board of a Ukrainian gas company, then you're in luck, you can experience the state of the art right now. For the rest of us however, GPT-4 is too expensive as anything but an occasional treat.
 
 Also note that GPT-4 is still in preview access and you need to go on a waitlist. Most people get approved within a day, but naughty kids can end up waiting for weeks. You can sign up for it here: https://openai.com/waitlist/gpt-4-api . I'm not sure why some people are approved quickly while others are kept waiting. Try to sign up using an academic-sounding name instead of sktrboi99, it might help.
 
@@ -61,21 +51,20 @@ Surprisingly, our development team has received reports that some users are inde
 
 We can consider an AI model to be part of one of two groups: 
 
-1. Web services (aka cloud, proprietary, closed)
-2. Self-hosted (aka local, free, open-source). Unlimited free use if you can run it.
+1. Paid services (aka cloud, proprietary, closed)
+2. Self-hosted (aka local, free, open-source)
 
-Web models are a black box. You're relying on some company's technology and servers, and paying them money for convenient access. Some require you to pay per use (per chatline), others have a fixed monthly fee. The APIs are subject to various rules, they might refuse to roleplay in a way that goes against modern American sensibilities, they log everything you do. However, it's much easier to get things started. This is like running Windows.
+Paid models are a black box. You're relying on some company's technology and servers, and paying them money for convenient access. The APIs are subject to various rules, might refuse to roleplay in a way that goes against modern American sensibilities, they log everything you do. However, it's much easier to get things started. This is like running Windows.
 
 Self-hosted models are free, but require a powerful GPU and more work to set up.  They are also objectively not as good at roleplaying as the paid options (yet). However, with a self-hosted model, you're completely in control. You won't have some limp-wristed soyboy from Silicon Valley ban your account, or program the model to be as sexless as he is.  It's yours forever. This is like running Linux.
 
 ### Paid APIs: 
-* OpenAI GPT-4: state of the art. Allows NSFW if you tell it to, though somewhat resistant to it. You pay per use, more than any other service.
-* OpenAI GPT 3.5 Turbo: nowhere close to GPT-4, but some people find it serviceable. Allows NSFW.
-* NovelAI: they're quite poor at chatting. To be fair, I'm told NovelAI is more oriented for writing stories than chatting with a bot. You pay a fixed monthly fee for unlimited generations.
-* Anthropic's Claude: this is the closest rival to GPT-4 and is very impressive. Allows NSFW if you tell it to, though they are trying hard to gimp it. To use the API directly, you must apply for early access, but I think they're only giving it to companies. So make sure you become a company or AI researcher when you apply at https://console.anthropic.com/docs/access. If you get access, it's currently free to use. 
-* Anthropic's Claude Instant: Haven't tried it directly, I believe this is the fast but lower quality alternative to Claude. Basically the GPT 3.5 Turbo of Anthropic.
-* Poe: gives a free & unlimited Claude Instant indirect access. Very mild PG-13 NSFW allowed. It rambles a lot.
-
+* OpenAI GPT-4: state of the art. Allows NSFW, though somewhat resistant to it.
+* OpenAI GPT 3.5 Turbo: nowhere close to GPT-4, but serviceable. Allows NSFW.
+* NovelAI: untested by me
+* Anthropic's Claude: closest thing to GPT-4, way ahead of 3.5 Turbo, but oversensitive and refuses to engage in "harmful content". It can refuse perfectly basic stuff like asking a character to go to an empty office with you, because "it cannot provide responses that involve criminal activities" (I guess breaking and entering is too taboo for Claude?). You have to customize your system prompt to break its taboos. Also, you must apply for early access, but I think they're only giving it to companies. So make sure to say you're a company or AI researcher. https://console.anthropic.com/docs/access 
+* Anthropic's Claude Instant: Haven't tried it directly, I believe this is the cheap and fast but lower quality alternative to Claude. Basically the GPT 3.5 Turbo of Anthropic.
+* Poe: gives free Claude Instant access. Mild NSFW allowed. It rambles a lot.
 
 ### Self-hosted AIs 
 Self-hosted AIs are supported in Tavern via one of two tools created to host self-hosted models: KoboldAI and Oobabooga's text-generation-webui. Essentially, you run one of those two backends, then they give you a API URL to enter in Tavern. 
@@ -85,6 +74,7 @@ Just know that you have 2 options:
 
 1. If you have a powerful NVIDIA GPU, you can try to run the AI locally on your PC. The weakest quasi-acceptable model, Pygmalion-6B, requires a GPU with 10GB VRAM, and I'm told it might even run on 6GB VRAM if quantized down. People with 24GB VRAM will be able to run better models. 
 2. Otherwise, you can rent cloud resources. For example you can try to use Google Colab. To access colabs capable of running the better models, you will need to pay for Colab Pro. You can also rent whole dedicated systems per hour on sites like LlambdaLabs or Vast.ai.
+
 
 ## Q: I'm clueless. Just spoonfeed me the easiest and fastest way I can start using this. 
 These base instructions are only for OpenAI, which is a paid service. You can find Poe (freemium) instructions at the next question. I'd appreciate if someone else can add separate instructions for the other services.
@@ -140,7 +130,7 @@ When using Poe, be careful, it's implemented in a hacky way. If you don't get an
 
 iPhones and iPads are not capable of running the whole Tavern app, but since it's just a web interface, you can run it on another computer on your home wifi, and then access in your mobile browser. Refer to https://github.com/Cohee1207/SillyTavern#remote-connections 
 
-For Android users, in addition to the above, you can run the whole Tavern directly on your phone, without needing a PC, using the Termux app. Refer to https://rentry.org/STAI-Termux .
+For Android users, in addition to the above, you can run the whole Tavern directly on your phone, without needing a PC, using the Termux app. Refer to https://rentry.org/TAI_Termux .
 
 ## Q: How can I download pre-made characters to chat with?
 

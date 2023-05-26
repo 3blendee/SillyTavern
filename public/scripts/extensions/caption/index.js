@@ -17,7 +17,7 @@ async function setImageIcon() {
     try {
         const sendButton = document.getElementById('send_picture');
         sendButton.classList.add('fa-image');
-        sendButton.classList.remove('fa-hourglass-half');
+        sendButton.classList.remove('fa-hourglass-half', 'fa-fade');
     }
     catch (error) {
         console.log(error);
@@ -28,7 +28,7 @@ async function setSpinnerIcon() {
     try {
         const sendButton = document.getElementById('send_picture');
         sendButton.classList.remove('fa-image');
-        sendButton.classList.add('fa-hourglass-half');
+        sendButton.classList.add('fa-hourglass-half', 'fa-fade');
     }
     catch (error) {
         console.log(error);
@@ -44,10 +44,8 @@ async function sendCaptionedMessage(caption, image) {
         is_name: true,
         send_date: Date.now(),
         mes: messageText,
-        extra: {
-            image: image,
-            title: caption,
-        },
+        extra: { image: image },
+        title: caption
     };
     context.chat.push(message);
     context.addOneMessage(message);
@@ -93,6 +91,12 @@ async function onSelectImage(e) {
 }
 
 $(document).ready(function () {
+    function patchSendForm() {
+        const columns = $('#send_form').css('grid-template-columns').split(' ');
+        columns[columns.length - 1] = `${parseInt(columns[columns.length - 1]) + 40}px`;
+        columns[1] = 'auto';
+        $('#send_form').css('grid-template-columns', columns.join(' '));
+    }
     function addSendPictureButton() {
         const sendButton = document.createElement('div');
         sendButton.id = 'send_picture';
@@ -114,6 +118,7 @@ $(document).ready(function () {
     addPictureSendForm();
     addSendPictureButton();
     setImageIcon();
+    patchSendForm();
     moduleWorker();
     setInterval(moduleWorker, UPDATE_INTERVAL);
 });
